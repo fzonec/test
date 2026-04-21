@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mohamed Hemamda — Portfolio</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --bg:#0e0e10;
+  --card:#151518;
+  --text:#f1f1f1;
+  --muted:#a0a0a0;
+  --accent:#00b894;
+}
+
+[data-theme="light"]{
+  --bg:#f5f5f5;
+  --card:#ffffff;
+  --text:#111;
+  --muted:#666;
+}
+
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  font-family:Inter,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  line-height:1.6;
+}
+
+/* NAV */
+nav{
+  display:flex;
+  justify-content:space-between;
+  padding:20px 40px;
+  border-bottom:1px solid rgba(255,255,255,.05);
+}
+nav a{color:var(--text);text-decoration:none;margin-left:20px;font-size:14px}
+
+/* HERO */
+.hero{
+  padding:80px 40px;
+  max-width:900px;
+}
+.hero h1{
+  font-size:48px;
+  margin-bottom:10px;
+}
+.hero p{
+  color:var(--muted);
+  margin-bottom:20px;
+}
+.btn{
+  display:inline-block;
+  padding:10px 18px;
+  border:1px solid var(--accent);
+  color:var(--accent);
+  text-decoration:none;
+  margin-right:10px;
+  transition:.2s;
+}
+.btn:hover{
+  background:var(--accent);
+  color:#000;
+}
+
+/* SECTIONS */
+section{
+  padding:60px 40px;
+  max-width:1000px;
+  margin:auto;
+}
+h2{
+  margin-bottom:20px;
+}
+
+/* CARDS */
+.grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:20px;
+}
+.card{
+  background:var(--card);
+  padding:20px;
+  border-radius:10px;
+}
+
+/* SKILLS */
+.skills span{
+  display:inline-block;
+  border:1px solid var(--accent);
+  padding:5px 10px;
+  margin:5px;
+  font-size:12px;
+}
+
+/* FOOTER */
+footer{
+  text-align:center;
+  padding:40px;
+  color:var(--muted);
+}
+
+/* MOBILE */
+@media(max-width:700px){
+  .grid{grid-template-columns:1fr}
+  .hero h1{font-size:32px}
+}
+</style>
+</head>
+
+<body>
+
+<nav>
+  <div>Mohamed Hemamda</div>
+  <div>
+    <a href="#about">Profil</a>
+    <a href="#projects">Projets</a>
+    <a href="#contact">Contact</a>
+    <button onclick="toggleTheme()">🌗</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <h1>Apprenti Technicien Systèmes & Réseaux</h1>
+  <p>BTS SIO SISR — Tunzini · Spécialisation : Active Directory, VLAN, Sécurité</p>
+
+  <a href="#projects" class="btn">Voir mes projets</a>
+  <a href="#contact" class="btn">Me contacter</a>
+</div>
+
+<!-- ABOUT -->
+<section id="about">
+  <h2>Profil</h2>
+  <p>
+  Actuellement en BTS SIO option SISR à l’ESUP La Défense, je suis en apprentissage chez Tunzini.
+  Je réalise des missions de support, configuration et maintenance réseau.
+  Rigoureux, autonome et orienté service utilisateur.
+  </p>
+</section>
+
+<!-- SKILLS -->
+<section>
+  <h2>Compétences</h2>
+  <div class="skills">
+    <span>Active Directory</span>
+    <span>Windows Server</span>
+    <span>VLAN</span>
+    <span>DHCP</span>
+    <span>DNS</span>
+    <span>Wireshark</span>
+    <span>VMware</span>
+    <span>PowerShell</span>
+    <span>Firewall</span>
+  </div>
+</section>
+
+<!-- PROJECTS -->
+<section id="projects">
+  <h2>Projets</h2>
+
+  <div class="grid">
+
+    <div class="card">
+      <h3>Projet Active Directory</h3>
+      <p>
+      Mise en place d’un domaine <strong>esup.local</strong> avec gestion des utilisateurs via PowerShell,
+      création d’OU et configuration de GPO de sécurité.
+      </p>
+    </div>
+
+    <div class="card">
+      <h3>Projet VLAN</h3>
+      <p>
+      Création d’un réseau multi-VLAN (RH, IT, Finance),
+      avec routage inter-VLAN, DHCP, ACL et supervision SNMP.
+      </p>
+    </div>
+
+  </div>
+</section>
+
+<!-- EXPERIENCE -->
+<section>
+  <h2>Expérience</h2>
+  <p><strong>Tunzini — Apprenti Technicien Systèmes & Réseaux (2026)</strong><br>
+  Configuration de postes, déploiement réseau, support utilisateur, maintenance équipements.</p>
+</section>
+
+<!-- CONTACT -->
+<section id="contact">
+  <h2>Contact</h2>
+  <p>Email : mohamed.hemamda017@gmail.com</p>
+  <p><a href="https://www.linkedin.com/in/mohamed-h-7b102032a/" target="_blank">LinkedIn</a></p>
+</section>
+
+<footer>
+  Mohamed Hemamda © 2026
+</footer>
+
+<script>
+function toggleTheme(){
+  const html = document.documentElement;
+  html.setAttribute("data-theme",
+    html.getAttribute("data-theme")==="dark" ? "light":"dark"
+  );
+}
+</script>
+
+</body>
+</html>
