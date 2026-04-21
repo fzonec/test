@@ -1,758 +1,474 @@
 <!DOCTYPE html>
-<html lang="fr" class="scroll-smooth">
+<html lang="fr" dir="ltr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mohamed Hemamda — Portfolio</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Syne:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: { void: '#030303', brand: '#F95500', brandDark: '#CC4400' },
-                    fontFamily: { inter: ['Inter','system-ui','sans-serif'], syne: ['Syne','sans-serif'] },
-                }
-            }
-        }
-    </script>
-    <style>
-        *{margin:0;padding:0;box-sizing:border-box;cursor:none}
-        ::selection{background:rgba(249,85,0,.3);color:#fff}
-        ::-webkit-scrollbar{width:5px}
-        ::-webkit-scrollbar-track{background:#030303}
-        ::-webkit-scrollbar-thumb{background:#151515;border-radius:3px}
-        ::-webkit-scrollbar-thumb:hover{background:#F95500}
-        html{background:#030303}
-        body{font-family:'Inter',system-ui,sans-serif;background:#030303;color:#eee;overflow-x:hidden}
-
-        #loader{position:fixed;inset:0;z-index:9999;background:#030303;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity .6s,visibility .6s}
-        #loader.hidden{opacity:0;visibility:hidden;pointer-events:none}
-        #loader-bar{width:120px;height:2px;background:#111;border-radius:2px;overflow:hidden;margin-top:24px}
-        #loader-fill{height:100%;width:0;background:#F95500;transition:width .3s}
-        #loader-text{font-family:'Syne',sans-serif;font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:#555}
-
-        #cursor{position:fixed;width:20px;height:20px;border:1.5px solid rgba(255,255,255,.5);border-radius:50%;pointer-events:none;z-index:10000;transition:width .3s,height .3s,border-color .3s,background .3s,transform .12s;transform:translate(-50%,-50%);mix-blend-mode:difference}
-        #cursor.hover{width:50px;height:50px;background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.8)}
-        #cursor.click{transform:translate(-50%,-50%) scale(.8)}
-        #cursor-dot{position:fixed;width:5px;height:5px;background:#F95500;border-radius:50%;pointer-events:none;z-index:10001;transform:translate(-50%,-50%)}
-
-        #three-canvas{position:fixed;inset:0;z-index:0;opacity:.35}
-        #noise{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.03;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
-        .glow-brand{background:radial-gradient(circle at center,rgba(249,85,0,.12) 0%,transparent 70%)}
-
-        .reveal{opacity:0;transform:translateY(60px);transition:opacity .9s cubic-bezier(.16,1,.3,1),transform .9s cubic-bezier(.16,1,.3,1)}
-        .reveal.active{opacity:1;transform:translateY(0)}
-        .reveal-left{opacity:0;transform:translateX(-60px);transition:opacity .9s cubic-bezier(.16,1,.3,1),transform .9s cubic-bezier(.16,1,.3,1)}
-        .reveal-left.active{opacity:1;transform:translateX(0)}
-        .reveal-right{opacity:0;transform:translateX(60px);transition:opacity .9s cubic-bezier(.16,1,.3,1),transform .9s cubic-bezier(.16,1,.3,1)}
-        .reveal-right.active{opacity:1;transform:translateX(0)}
-        .reveal-scale{opacity:0;transform:scale(.92);transition:opacity .9s ease,transform .9s cubic-bezier(.16,1,.3,1)}
-        .reveal-scale.active{opacity:1;transform:scale(1)}
-        .stagger-1{transition-delay:.1s}.stagger-2{transition-delay:.2s}.stagger-3{transition-delay:.3s}
-        .stagger-4{transition-delay:.4s}.stagger-5{transition-delay:.5s}.stagger-6{transition-delay:.6s}
-
-        .hero-line{overflow:hidden}
-        .hero-line-inner{transform:translateY(110%);transition:transform 1.2s cubic-bezier(.16,1,.3,1)}
-        .hero-line-inner.active{transform:translateY(0)}
-        .magnetic-btn{position:relative;display:inline-flex;align-items:center;justify-content:center;transition:transform .3s}
-
-        .project-card{position:relative;overflow:hidden}
-        .project-card img{transition:transform .8s cubic-bezier(.16,1,.3,1),filter .8s}
-        .project-card:hover img{transform:scale(1.06);filter:brightness(.45)}
-        .project-card .card-content{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-end;padding:2rem;opacity:0;transform:translateY(20px);transition:opacity .5s,transform .5s}
-        .project-card:hover .card-content{opacity:1;transform:translateY(0)}
-        .project-card .card-number{position:absolute;top:1.5rem;right:1.5rem;font-family:'Syne',sans-serif;font-size:.75rem;letter-spacing:.2em;color:rgba(255,255,255,.25)}
-
-        .line-grow{width:0;transition:width 1.2s cubic-bezier(.16,1,.3,1)}
-        .line-grow.active{width:100%}
-
-        @keyframes marquee{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
-        .marquee-track{animation:marquee 28s linear infinite}
-
-        #nav{transition:background .4s,backdrop-filter .4s}
-        #nav.scrolled{background:rgba(3,3,3,.85);backdrop-filter:blur(16px)}
-
-        .skill-fill{width:0;transition:width 1.5s cubic-bezier(.16,1,.3,1)}
-
-        .form-input{background:transparent;border:none;border-bottom:1px solid rgba(255,255,255,.08);padding:1rem 0;color:#fff;font-size:1rem;font-family:'Inter',sans-serif;outline:none;transition:border-color .3s;width:100%}
-        .form-input:focus{border-bottom-color:#F95500}
-        .form-input::placeholder{color:#333}
-
-        @keyframes pulse-dot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.6)}}
-        .status-dot{animation:pulse-dot 2s ease-in-out infinite}
-
-        .img-mask{-webkit-mask-image:linear-gradient(to bottom,black 80%,transparent 100%);mask-image:linear-gradient(to bottom,black 80%,transparent 100%)}
-
-        #toast{position:fixed;bottom:2rem;right:2rem;z-index:9998;background:#111;border:1px solid rgba(249,85,0,.3);color:#fff;padding:1rem 1.5rem;border-radius:8px;font-size:.875rem;transform:translateY(120%);opacity:0;transition:transform .5s cubic-bezier(.16,1,.3,1),opacity .5s}
-        #toast.show{transform:translateY(0);opacity:1}
-
-        .neon-line{width:100%;height:1px;background:linear-gradient(90deg,transparent,rgba(249,85,0,.3),rgba(249,85,0,.05),transparent)}
-
-        @media(max-width:768px){
-            *{cursor:auto}
-            #cursor,#cursor-dot{display:none}
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portfolio - Mohamed Hemamda</title>
+  <meta name="description" content="Portfolio de Mohamed Hemamda, apprenti BTS SIO SISR à la ESUP La Défense, Tunzini">
+  <meta property="og:title" content="Portfolio Mohamed Hemamda">
+  <meta property="og:description" content="Apprenti BTS SIO SISR · Portfolio de projets, compétences et expériences · Tunzini · ESUP La Défense">
+  <meta property="og:image" content="https://placeholder.com/300x300.png"> <!-- À remplacer par une image de toi -->
+  <meta property="og:url" content="https://ton-portfolio.fr">
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    /* Styles de base, à améliorer pour le dark mode si besoin */
+    :root {
+      --bg-main: #f5f7fa;
+      --bg-secondary: #e8eaf6;
+      --accent: #00b894;
+      --text-primary: #1a1815;
+      --text-secondary: #5a5663;
+      --border: #e0e0e0;
+      --radius: 16px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg-main);
+      color: var(--text-primary);
+      font-family: 'Montserrat', 'Inter', sans-serif;
+      min-height: 100vh;
+      padding: 0 2rem;
+      transition: background 0.4s;
+    }
+    @media (prefers-color-scheme: dark) {
+      body { background: #181a1b; color: #f0ede8; }
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 4rem;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(24,24,35,0.7);
+      border-bottom: 2px solid var(--border);
+      box-shadow: 0 2px 16px rgba(0,0,0,0.08);
+    }
+    .logo {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 2rem;
+      font-weight: bold;
+      color: var(--accent);
+      letter-spacing: 1px;
+      text-shadow: 1px 1px 0 #fff5;
+      margin-right: 2rem;
+    }
+    .nav-links {
+      display: flex;
+      gap: 2rem;
+    }
+    .nav-links a {
+      text-decoration: none;
+      color: var(--text-secondary);
+      font-size: 1rem;
+      font-weight: 600;
+      transition: color 0.2s;
+      position: relative;
+    }
+    .nav-links a:hover { color: var(--accent); }
+    .nav-links a::after {
+      content: '';
+      position: absolute;
+      left: 0; top: 2px; width: 0; height: 2px;
+      background: var(--accent);
+      transition: width 0.2s;
+    }
+    .nav-links a:hover::after { width: 100%; }
+    .theme-btn {
+      background: none;
+      border: none;
+      color: var(--text-secondary);
+      font-size: 1.2rem;
+      font-family: 'Montserrat', sans-serif;
+      padding: 0.6rem 1.5rem;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+    }
+    .theme-btn:hover {
+      background: var(--accent);
+      color: #fff;
+    }
+    section {
+      max-width: 900px;
+      margin: 4rem auto 2rem auto;
+      padding: 2.5rem 1.5rem;
+      background: var(--bg-secondary);
+      border-radius: var(--radius);
+      box-shadow: 0 2px 16px rgba(0,0,0,0.06);
+    }
+    .section-header {
+      text-align: center;
+      margin-bottom: 2rem;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: 1px;
+    }
+    h2 {
+      color: var(--accent);
+      margin-top: 0;
+    }
+    .profile-pic {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 4px solid var(--accent);
+      margin-bottom: 1rem;
+      background: #fff;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    }
+    /* À compléter avec ta photo : <img src="photo.jpg" alt="Photo de profil" class="profile-pic"> */
+    .grid-section {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 2rem;
+      margin-bottom: 2rem;
+    }
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+      transition: box-shadow 0.2s;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    .card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+    .card h3 {
+      font-weight: 600;
+      margin-top: 0;
+      color: var(--text-secondary);
+    }
+    /* Pour les projets */
+    .project-card {
+      background: #f9fafc;
+      border: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      padding: 1.5rem;
+      border-radius: 12px;
+    }
+    .project-card .project-num {
+      font-size: 2rem;
+      color: var(--accent);
+      font-weight: bold;
+      margin-bottom: 0.5rem;
+      text-align: center;
+    }
+    .project-card img {
+      width: 100%;
+      height: 140px;
+      object-fit: cover;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+      display: block;
+    }
+    .project-card a {
+      display: inline-block;
+      background: var(--accent);
+      color: #fff;
+      padding: 0.7rem 1.5rem;
+      border-radius: 8px;
+      text-decoration: none;
+      transition: background 0.2s;
+      margin-top: auto;
+    }
+    .project-card a:hover { background: #fff; color: var(--accent); }
+    /* Formulaire de contact */
+    .contact-form {
+      max-width: 400px;
+      margin: 0 auto;
+      background: #fff;
+      border-radius: 12px;
+      padding: 2rem;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+    }
+    .contact-form input, .contact-form textarea {
+      width: 100%;
+      padding: 0.7rem;
+      margin-bottom: 1rem;
+      border: 1px solid #e0e0e0;
+      border-radius: 6px;
+      font-size: 1rem;
+    }
+    .contact-form button {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      padding: 0.7rem 2rem;
+      font-size: 1rem;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .contact-form button:hover { background: #fff; color: var(--accent); }
+    /* Footer */
+    footer {
+      background: var(--bg-main);
+      text-align: center;
+      color: var(--text-secondary);
+      padding: 2rem 0 1rem 0;
+      font-size: 0.95rem;
+      margin-top: 3rem;
+      border-top: 1px solid var(--border);
+    }
+    /* Responsive */
+    @media (max-width: 700px) {
+      section { padding: 1rem; }
+      header { padding: 0.5rem 1rem; }
+      .grid-section { grid-template-columns: 1fr; }
+    }
+  </style>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
 <body>
-
-<!-- Loader -->
-<div id="loader">
-    <span id="loader-text">Chargement</span>
-    <div id="loader-bar"><div id="loader-fill"></div></div>
-</div>
-
-<!-- Cursor -->
-<div id="cursor"></div>
-<div id="cursor-dot"></div>
-
-<!-- Noise -->
-<div id="noise"></div>
-
-<!-- Three.js -->
-<canvas id="three-canvas"></canvas>
-
-<!-- Toast -->
-<div id="toast"></div>
-
-<!-- Nav -->
-<nav id="nav" class="fixed top-0 left-0 w-full z-[100] px-6 md:px-12 py-5 flex items-center justify-between">
-    <a href="#hero" class="font-syne font-semibold text-lg tracking-tight text-white hover-target">MH<span class="text-brand">.</span></a>
-    <div class="hidden md:flex items-center gap-10">
-        <a href="#about" class="text-xs uppercase tracking-widest text-[#666] hover:text-white transition-colors hover-target">Profil</a>
-        <a href="#projects" class="text-xs uppercase tracking-widest text-[#666] hover:text-white transition-colors hover-target">Projets</a>
-        <a href="#skills" class="text-xs uppercase tracking-widest text-[#666] hover:text-white transition-colors hover-target">Compétences</a>
-        <a href="#parcours" class="text-xs uppercase tracking-widest text-[#666] hover:text-white transition-colors hover-target">Parcours</a>
-        <a href="#contact" class="text-xs uppercase tracking-widest text-[#666] hover:text-white transition-colors hover-target">Contact</a>
+  <!-- Favicon : ajouter un fichier favicon.png dans le dossier -->
+  <header>
+    <div class="logo">MH<span class="fa fa-graduation-cap"></span></div>
+    <div class="nav-links">
+      <a href="#profil">Profil</a>
+      <a href="#competences">Compétences</a>
+      <a href="#projets">Projets</a>
+      <a href="#experience">Expérience</a>
+      <a href="#formation">Formation</a>
+      <a href="#langues">Langues</a>
+      <a href="#contact">Contact</a>
+      <button class="theme-btn" title="Basculer au mode sombre"><i class="fa fa-sun"></i> Mode clair</button>
+      <!-- Ajouter une logique JS pour le mode sombre ici -->
     </div>
-    <div class="flex items-center gap-3">
-        <span class="w-2 h-2 rounded-full bg-green-500 status-dot"></span>
-        <span class="text-xs text-[#555] hidden sm:inline">Disponible</span>
+  </header>
+
+  <!-- Profil -->
+  <section id="profil">
+    <div class="section-header">
+      <img class="profile-pic" src="https://randomuser.me/api/portraits/men/32.jpg" alt="Photo de profil">
+      <span>Mohamed Hemamda</span>
+      <span>Apprenti BTS SIO SISR · Tunzini · ESUP La Défense</span>
     </div>
-    <button id="mobile-menu-btn" class="md:hidden text-white hover-target" aria-label="Menu">
-        <i data-lucide="menu" class="w-5 h-5"></i>
-    </button>
-</nav>
+    <div>
+      <p>Technicien Systèmes &amp; Réseaux passionné par l’infrastructure, la cybersécurité et l’administration réseau. En 1ère année de BTS SIO SISR à l’ESUP La Défense, je réalise des missions de support, configuration et maintenance réseau chez Tunzini depuis janvier 2026.</p>
+      <p>Approche rigoureuse, autonome, orientée service utilisateur.</p>
+    </div>
+    <div class="grid-section">
+      <div>
+        <h3>📧 Contact</h3>
+        <a href="mailto:mohamed.hemamda017@gmail.com" class="btn btn-ghost">Envoyer un email</a>
+      </div>
+      <div>
+        <h3>🔗 LinkedIn</h3>
+        <a href="https://www.linkedin.com/in/mohamed-h-7b102032a/" target="_blank" class="btn btn-ghost">Voir mon profil</a>
+      </div>
+    </div>
+  </section>
 
-<!-- Mobile Menu -->
-<div id="mobile-menu" class="fixed inset-0 z-[99] bg-void/95 backdrop-blur-xl flex flex-col items-center justify-center gap-8 opacity-0 pointer-events-none transition-opacity duration-500">
-    <a href="#about" class="mobile-link font-syne text-3xl font-medium text-white hover:text-brand transition-colors">Profil</a>
-    <a href="#projects" class="mobile-link font-syne text-3xl font-medium text-white hover:text-brand transition-colors">Projets</a>
-    <a href="#skills" class="mobile-link font-syne text-3xl font-medium text-white hover:text-brand transition-colors">Compétences</a>
-    <a href="#parcours" class="mobile-link font-syne text-3xl font-medium text-white hover:text-brand transition-colors">Parcours</a>
-    <a href="#contact" class="mobile-link font-syne text-3xl font-medium text-white hover:text-brand transition-colors">Contact</a>
-</div>
+  <!-- Compétences -->
+  <section id="competences">
+    <div class="section-header">Compétences</div>
+    <div class="grid-section">
+      <div class="card">
+        <h3>Infrastructure Réseaux</h3>
+        <ul>
+          <li>Installation & configuration postes</li>
+          <li>Serveurs, switchs, VLAN</li>
+          <li>Wireshark, diagnostic réseau</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Sécurité Informatique</h3>
+        <ul>
+          <li>Gestion pare-feu, antivirus</li>
+          <li>GPO, audit sécurité</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Virtualisation</h3>
+        <ul>
+          <li>VMware, VirtualBox</li>
+          <li>Windows Server 2019 AD DS, DNS</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Soft Skills</h3>
+        <ul>
+          <li>Support utilisateur</li>
+          <li>Rédaction de procédures</li>
+          <li>Communication, autonomie</li>
+        </ul>
+      </div>
+    </div>
+  </section>
 
-<!-- ===================== MAIN ===================== -->
-<main class="relative z-[2]">
+  <!-- Projets -->
+  <section id="projets">
+    <div class="section-header">Projets scolaires</div>
+    <div class="grid-section">
+      <div class="project-card">
+        <div class="project-num">01</div>
+        <h3>Projet Active Directory</h3>
+        <img src="https://via.placeholder.com/300x140?text=AD+Project" alt="Active Directory">
+        <p>Déploiement complet d'une infrastructure Active Directory (domaine esup.local, 4 OUs, GPO, PowerShell).</p>
+        <a href="projet-ad.html" class="project-card a">Voir le projet</a>
+      </div>
+      <div class="project-card">
+        <div class="project-num">02</div>
+        <h3>Projet VLAN Packet Tracer</h3>
+        <img src="https://via.placeholder.com/300x140?text=VLAN+PacketTracer" alt="VLAN">
+        <p>Réseau multi-services avec 3 VLAN, DHCP, ACL, SNMP sur Packet Tracer.</p>
+        <a href="projet-vlan.html" class="project-card a">Voir le projet</a>
+      </div>
+      <!-- Ajouter d'autres projets ici -->
+    </div>
+  </section>
 
-    <!-- HERO -->
-    <section id="hero" class="min-h-screen flex flex-col justify-center px-6 md:px-12 relative overflow-hidden">
-        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] glow-brand pointer-events-none"></div>
-        <div class="max-w-7xl mx-auto w-full pt-32 pb-20">
-            <div class="hero-line mb-6">
-                <div class="hero-line-inner flex items-center gap-3">
-                    <span class="w-8 h-[1px] bg-brand"></span>
-                    <span class="text-[10px] uppercase tracking-[.3em] text-[#555] font-medium">Apprenti BTS SIO SISR · Tunzini · 2026</span>
-                </div>
-            </div>
-            <h1 class="font-syne font-semibold leading-[.9] tracking-tight">
-                <div class="hero-line"><span class="hero-line-inner block text-[3rem] sm:text-[5rem] md:text-[7rem] lg:text-[8.5rem] text-white">Systèmes,</span></div>
-                <div class="hero-line"><span class="hero-line-inner block text-[3rem] sm:text-[5rem] md:text-[7rem] lg:text-[8.5rem] text-white">réseaux</span></div>
-                <div class="hero-line"><span class="hero-line-inner block text-[3rem] sm:text-[5rem] md:text-[7rem] lg:text-[8.5rem]"><span class="text-brand">&amp; sécurité.</span></span></div>
-            </h1>
-            <div class="mt-12 flex flex-col sm:flex-row sm:items-end justify-between gap-8">
-                <p class="text-[#777] text-sm leading-relaxed max-w-md reveal stagger-4">
-                    Technicien Systèmes &amp; Réseaux passionné par l'infrastructure, la cybersécurité et l'administration réseau. Actuellement en apprentissage chez Tunzini.
-                </p>
-                <div class="flex items-center gap-4 reveal stagger-5">
-                    <a href="#contact" class="magnetic-btn hover-target bg-brand text-black text-xs font-bold uppercase tracking-widest px-8 py-4 rounded-full hover:bg-white transition-colors duration-300">Me contacter</a>
-                    <a href="#projects" class="magnetic-btn hover-target border border-white/10 text-white text-xs font-bold uppercase tracking-widest px-8 py-4 rounded-full hover:border-brand hover:text-brand transition-all duration-300">Projets</a>
-                </div>
-            </div>
-        </div>
-        <div class="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3 reveal stagger-6">
-            <span class="text-[10px] uppercase tracking-[.3em] text-[#333]">Scroll</span>
-            <div class="w-[1px] h-10 bg-gradient-to-b from-brand to-transparent"></div>
-        </div>
-    </section>
+  <!-- Expériences -->
+  <section id="experience">
+    <div class="section-header">Expériences</div>
+    <div class="grid-section">
+      <div class="card">
+        <h3>Tunzini — Apprenti Systèmes & Réseaux (2026- )</h3>
+        <ul>
+          <li>Configuration postes, déploiement équipements</li>
+          <li>Maintenance switchs, support quotidien</li>
+          <li>Déploiement serveurs, rédaction procédures</li>
+        </ul>
+        <div class="tags"><i class="fa fa-windows"></i> <i class="fa fa-vmware"></i> <i class="fa fa-network"></i></div>
+      </div>
+      <div class="card">
+        <h3>Collège Évariste Galois — Soutien scolaire (Mars–Mai 2021)</h3>
+        <ul>
+          <li>Soutien mathématiques</li>
+          <li>Pédagogie, communication</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>École Robespierre — Stage observation (Nov. 2020)</h3>
+        <ul>
+          <li>Observation travail enseignant</li>
+          <li>Soutien logistique</li>
+        </ul>
+      </div>
+    </div>
+  </section>
 
-    <!-- MARQUEE -->
-    <section class="py-8 border-y border-white/5 overflow-hidden">
-        <div class="flex whitespace-nowrap marquee-track">
-            <span class="mx-8 text-[#1a1a1a] font-syne text-sm uppercase tracking-widest">Active Directory</span>
-            <span class="mx-4 text-brand text-xs">✦</span>
-            <span class="mx-8 text-[#1a1a1a] font-syne text-sm uppercase tracking-widest">VLAN</span>
-            <span class="mx-4 text-brand text-xs">✦</span>
-            <span class="mx-8 text-[#1a1a1a] font-syne text-sm uppercase tracking-widest">VMware</span>
-            <span class="mx-4 text-brand text-xs">✦</span>
-            <span class="mx-8 text-[#1a1a1a] font-syne text-sm uppercase tracking-widest">PowerShell</span>
-            <span class="mx-4 text-brand text-xs">✦</span>
-            <span class="mx-8 text-[#1a1a1a] font-syne text-sm uppercase tracking-widest">Windows Server</span>
-            <span class="mx-4 text-brand text-xs">✦</span>
-            <span class="mx-8 text-[#1a1a1a] font-syne text-sm uppercase tracking-widest">Cisco</span>
-            <span class="mx-4 text-brand text-xs">✦</span>
-            <span class="mx-8 text-[#1a1a1a] font-syne text-sm uppercase tracking-widest">Wireshark</span>
-            <span class="mx-4 text-brand text-xs">✦</span>
-            <span class="mx-8 text-[#1a1a1a] font-syne text-sm uppercase tracking-widest">GPO</span>
-            <span class="mx-4 text-brand text-xs">✦</span>
-            <span class="mx-8 text-[#1a1a1a] font-syne text-sm uppercase tracking-widest">Active Directory</span>
-            <span class="mx-4 text-brand text-xs">✦</span>
-            <span class="mx-8 text-[#1a1a1a] font-syne text-sm uppercase tracking-widest">VLAN</span>
-            <span class="mx-4 text-brand text-xs">✦</span>
-            <span class="mx-8 text-[#1a1a1a] font-syne text-sm uppercase tracking-widest">VMware</span>
-            <span class="mx-4 text-brand text-xs">✦</span>
-            <span class="mx-8 text-[#1a1a1a] font-syne text-sm uppercase tracking-widest">PowerShell</span>
-            <span class="mx-4 text-brand text-xs">✦</span>
-            <span class="mx-8 text-[#1a1a1a] font-syne text-sm uppercase tracking-widest">Windows Server</span>
-            <span class="mx-4 text-brand text-xs">✦</span>
-            <span class="mx-8 text-[#1a1a1a] font-syne text-sm uppercase tracking-widest">Cisco</span>
-            <span class="mx-4 text-brand text-xs">✦</span>
-            <span class="mx-8 text-[#1a1a1a] font-syne text-sm uppercase tracking-widest">Wireshark</span>
-            <span class="mx-4 text-brand text-xs">✦</span>
-            <span class="mx-8 text-[#1a1a1a] font-syne text-sm uppercase tracking-widest">GPO</span>
-            <span class="mx-4 text-brand text-xs">✦</span>
-        </div>
-    </section>
+  <!-- Formation -->
+  <section id="formation">
+    <div class="section-header">Formation</div>
+    <div class="grid-section">
+      <div class="card">
+        <h3>BTS SIO SISR · ESUP La Défense (2025–2027)</h3>
+        <p>Option SISR, année 1</p>
+      </div>
+      <div class="card">
+        <h3>Licence STAPS · Université Paris Nanterre (2024–2025)</h3>
+        <p>Spécialité Sport</p>
+      </div>
+      <div class="card">
+        <h3>Baccalauréat · Lycée Joliot Curie (2023)</h3>
+        <p>Sciences Générales</p>
+      </div>
+    </div>
+  </section>
 
-    <!-- ABOUT -->
-    <section id="about" class="px-6 md:px-12 py-24 md:py-40">
-        <div class="max-w-7xl mx-auto">
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 items-center">
-                <div class="reveal-left">
-                    <div class="relative overflow-hidden rounded-2xl">
-                        <img src="https://picsum.photos/seed/sysadmin-server/700/900.jpg" alt="Infrastructure" class="w-full h-[500px] md:h-[650px] object-cover img-mask" loading="lazy">
-                        <div class="absolute inset-0 bg-gradient-to-t from-void via-transparent to-transparent"></div>
-                        <div class="absolute bottom-6 left-6 right-6 flex gap-4">
-                            <div class="bg-black/60 backdrop-blur-sm border border-white/5 rounded-xl px-5 py-4 flex-1">
-                                <div class="font-syne text-2xl font-semibold text-brand">BTS</div>
-                                <div class="text-[10px] uppercase tracking-widest text-[#555] mt-1">SIO SISR</div>
-                            </div>
-                            <div class="bg-black/60 backdrop-blur-sm border border-white/5 rounded-xl px-5 py-4 flex-1">
-                                <div class="font-syne text-2xl font-semibold text-brand">4</div>
-                                <div class="text-[10px] uppercase tracking-widest text-[#555] mt-1">Langues</div>
-                            </div>
-                            <div class="bg-black/60 backdrop-blur-sm border border-white/5 rounded-xl px-5 py-4 flex-1">
-                                <div class="font-syne text-2xl font-semibold text-brand">B2</div>
-                                <div class="text-[10px] uppercase tracking-widest text-[#555] mt-1">Anglais</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div>
-                    <div class="reveal flex items-center gap-3 mb-6">
-                        <span class="w-8 h-[1px] bg-brand"></span>
-                        <span class="text-[10px] uppercase tracking-[.3em] text-[#555]">01 — Profil</span>
-                    </div>
-                    <h2 class="reveal stagger-1 font-syne text-3xl md:text-5xl font-semibold tracking-tight leading-tight mb-8">
-                        Admin sys<br>&amp; réseaux <span class="text-brand">en devenir.</span>
-                    </h2>
-                    <p class="reveal stagger-2 text-[#777] text-sm leading-relaxed mb-4">
-                        Actuellement en 1ère année de BTS SIO option SISR à l'école <strong class="text-[#aaa]">ESUP La Défense</strong>, j'effectue mon apprentissage chez <strong class="text-[#aaa]">Tunzini</strong> depuis janvier 2026.
-                    </p>
-                    <p class="reveal stagger-3 text-[#777] text-sm leading-relaxed mb-10">
-                        Je réalise quotidiennement des missions de support, configuration et maintenance réseau. Rigoureux, autonome, orienté service utilisateur.
-                    </p>
-                    <div class="reveal stagger-4 grid grid-cols-2 gap-6 mb-10">
-                        <div class="border-l border-white/10 pl-4">
-                            <div class="text-[10px] uppercase tracking-widest text-[#444] mb-1">Localisation</div>
-                            <div class="text-sm text-white">Nanterre, 92000</div>
-                        </div>
-                        <div class="border-l border-white/10 pl-4">
-                            <div class="text-[10px] uppercase tracking-widest text-[#444] mb-1">Spécialité</div>
-                            <div class="text-sm text-white">Systèmes &amp; Réseaux</div>
-                        </div>
-                        <div class="border-l border-white/10 pl-4">
-                            <div class="text-[10px] uppercase tracking-widest text-[#444] mb-1">Email</div>
-                            <div class="text-sm text-white">mohamed.hemamda017@gmail.com</div>
-                        </div>
-                        <div class="border-l border-white/10 pl-4">
-                            <div class="text-[10px] uppercase tracking-widest text-[#444] mb-1">École</div>
-                            <div class="text-sm text-white">ESUP La Défense</div>
-                        </div>
-                    </div>
-                    <a href="#contact" class="reveal stagger-5 magnetic-btn hover-target inline-flex items-center gap-3 text-xs uppercase tracking-widest text-brand font-bold group">
-                        <span>Me contacter</span>
-                        <i data-lucide="arrow-right" class="w-4 h-4 transition-transform group-hover:translate-x-1"></i>
-                    </a>
-                </div>
-            </div>
-        </div>
-    </section>
+  <!-- Langues -->
+  <section id="langues">
+    <div class="section-header">Langues</div>
+    <div class="grid-section">
+      <div class="card">
+        <span><i class="fa fa-flag-fr"></i></span> Français <span class="badge">C2 · Natif</span>
+      </div>
+      <div class="card">
+        <span><i class="fa fa-flag-ar"></i></span> Arabe <span class="badge">C2 · Natif</span>
+      </div>
+      <div class="card">
+        <span><i class="fa fa-flag-en"></i></span> Anglais <span class="badge">B2 · Avancé</span>
+      </div>
+      <div class="card">
+        <span><i class="fa fa-flag-es"></i></span> Espagnol <span class="badge">C1 · Courant</span>
+      </div>
+    </div>
+  </section>
 
-    <div class="neon-line"></div>
+  <!-- Contact -->
+  <section id="contact">
+    <div class="section-header">Contact</div>
+    <div>
+      <p>Disponible pour stage, alternance ou collaboration. N'hésite pas à me contacter !</p>
+      <div class="contact-form">
+        <form id="contactForm">
+          <label for="nom">Nom :</label>
+          <input type="text" name="nom" required>
+          <label for="email">Email :</label>
+          <input type="email" name="email" required>
+          <label for="sujet">Sujet :</label>
+          <input type="text" name="sujet" required>
+          <textarea name="message" placeholder="Message" rows="4" required></textarea>
+          <button type="submit">Envoyer</button>
+        </form>
+        <div id="formMessage" style="color:green;display:none;margin-top:1rem;">Merci pour ton message !</div>
+      </div>
+      <!-- À compléter avec un script JS pour valider le formulaire -->
+    </div>
+    <div class="grid-section">
+      <div>
+        <a href="mailto:mohamed.hemamda017@gmail.com" class="btn btn-fill">Envoyer un email</a>
+      </div>
+      <div>
+        <a href="https://www.linkedin.com/in/mohamed-h-7b102032a/" target="_blank" class="btn btn-ghost">LinkedIn</a>
+      </div>
+    </div>
+  </section>
 
-    <!-- PROJECTS -->
-    <section id="projects" class="px-6 md:px-12 py-24 md:py-40">
-        <div class="max-w-7xl mx-auto">
-            <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-16">
-                <div>
-                    <div class="reveal flex items-center gap-3 mb-6">
-                        <span class="w-8 h-[1px] bg-brand"></span>
-                        <span class="text-[10px] uppercase tracking-[.3em] text-[#555]">02 — Projets scolaires</span>
-                    </div>
-                    <h2 class="reveal stagger-1 font-syne text-3xl md:text-5xl font-semibold tracking-tight">
-                        Travail <span class="text-brand">récent</span>
-                    </h2>
-                </div>
-                <p class="reveal stagger-2 text-[#555] text-sm max-w-sm">
-                    Projets réalisés dans le cadre du BTS SIO SISR à ESUP La Défense.
-                </p>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Projet AD -->
-                <div class="project-card reveal-scale stagger-1 rounded-2xl overflow-hidden h-[420px] md:h-[520px] relative hover-target group">
-                    <span class="card-number">01</span>
-                    <img src="https://picsum.photos/seed/active-directory-server/800/600.jpg" alt="Projet Active Directory" class="absolute inset-0 w-full h-full object-cover">
-                    <div class="card-content">
-                        <div class="flex gap-2 mb-3 flex-wrap">
-                            <span class="text-[10px] uppercase tracking-widest bg-brand/20 text-brand px-3 py-1 rounded-full">AD DS</span>
-                            <span class="text-[10px] uppercase tracking-widest bg-white/5 text-[#888] px-3 py-1 rounded-full">DNS</span>
-                            <span class="text-[10px] uppercase tracking-widest bg-white/5 text-[#888] px-3 py-1 rounded-full">GPO</span>
-                            <span class="text-[10px] uppercase tracking-widest bg-white/5 text-[#888] px-3 py-1 rounded-full">PowerShell</span>
-                            <span class="text-[10px] uppercase tracking-widest bg-white/5 text-[#888] px-3 py-1 rounded-full">Kerberos</span>
-                        </div>
-                        <h3 class="font-syne text-2xl font-semibold text-white mb-2">Projet Active Directory</h3>
-                        <p class="text-sm text-[#888] mb-1">Mars 2026 · VirtualBox · Windows Server 2019</p>
-                        <p class="text-sm text-[#777] mb-4">Déploiement complet d'une infrastructure AD — domaine esup.local, 4 OUs, import CSV via PowerShell, GPO de sécurité.</p>
-                        <div class="flex items-center gap-4">
-                            <div class="flex gap-1.5">
-                                <span class="text-[10px] font-bold bg-brand/10 border border-brand/20 text-brand px-2 py-0.5 rounded">C3</span>
-                                <span class="text-[10px] font-bold bg-brand/10 border border-brand/20 text-brand px-2 py-0.5 rounded">C6</span>
-                                <span class="text-[10px] font-bold bg-brand/10 border border-brand/20 text-brand px-2 py-0.5 rounded">C7</span>
-                            </div>
-                            <a href="#" class="inline-flex items-center gap-2 text-xs uppercase tracking-widest text-brand font-bold group/link ml-auto">
-                                <span>Voir le projet</span>
-                                <i data-lucide="arrow-up-right" class="w-3 h-3 transition-transform group-hover/link:-translate-y-0.5 group-hover/link:translate-x-0.5"></i>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-                <!-- Projet VLAN -->
-                <div class="project-card reveal-scale stagger-2 rounded-2xl overflow-hidden h-[420px] md:h-[520px] relative hover-target group md:mt-16">
-                    <span class="card-number">02</span>
-                    <img src="https://picsum.photos/seed/cisco-network-vlan/800/600.jpg" alt="Projet VLAN" class="absolute inset-0 w-full h-full object-cover">
-                    <div class="card-content">
-                        <div class="flex gap-2 mb-3 flex-wrap">
-                            <span class="text-[10px] uppercase tracking-widest bg-brand/20 text-brand px-3 py-1 rounded-full">VLAN</span>
-                            <span class="text-[10px] uppercase tracking-widest bg-white/5 text-[#888] px-3 py-1 rounded-full">Inter-VLAN</span>
-                            <span class="text-[10px] uppercase tracking-widest bg-white/5 text-[#888] px-3 py-1 rounded-full">DHCP</span>
-                            <span class="text-[10px] uppercase tracking-widest bg-white/5 text-[#888] px-3 py-1 rounded-full">ACL</span>
-                            <span class="text-[10px] uppercase tracking-widest bg-white/5 text-[#888] px-3 py-1 rounded-full">SNMP</span>
-                        </div>
-                        <h3 class="font-syne text-2xl font-semibold text-white mb-2">Projet VLAN Packet Tracer</h3>
-                        <p class="text-sm text-[#888] mb-1">2026 · Cisco Packet Tracer · Niveau intermédiaire</p>
-                        <p class="text-sm text-[#777] mb-4">Réseau multi-services pour StratAdvise — 3 VLANs isolés (RH, Finances, IT), routage inter-VLAN, DHCP, DNS, ACL, SNMP.</p>
-                        <div class="flex items-center gap-4">
-                            <div class="flex gap-1.5">
-                                <span class="text-[10px] font-bold bg-brand/10 border border-brand/20 text-brand px-2 py-0.5 rounded">C3</span>
-                                <span class="text-[10px] font-bold bg-brand/10 border border-brand/20 text-brand px-2 py-0.5 rounded">C4</span>
-                                <span class="text-[10px] font-bold bg-brand/10 border border-brand/20 text-brand px-2 py-0.5 rounded">C6</span>
-                                <span class="text-[10px] font-bold bg-brand/10 border border-brand/20 text-brand px-2 py-0.5 rounded">C7</span>
-                            </div>
-                            <a href="#" class="inline-flex items-center gap-2 text-xs uppercase tracking-widest text-brand font-bold group/link ml-auto">
-                                <span>Voir le projet</span>
-                                <i data-lucide="arrow-up-right" class="w-3 h-3 transition-transform group-hover/link:-translate-y-0.5 group-hover/link:translate-x-0.5"></i>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
+  <footer>
+    <span>Mohamed Hemamda © 2026 — <a href="https://tunzini.fr" target="_blank">Tunzini</a> · <a href="https://esup-ladefense.fr" target="_blank">ESUP La Défense</a></span>
+  </footer>
 
-    <div class="neon-line"></div>
-
-    <!-- SKILLS -->
-    <section id="skills" class="px-6 md:px-12 py-24 md:py-40">
-        <div class="max-w-7xl mx-auto">
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24">
-                <div>
-                    <div class="reveal flex items-center gap-3 mb-6">
-                        <span class="w-8 h-[1px] bg-brand"></span>
-                        <span class="text-[10px] uppercase tracking-[.3em] text-[#555]">03 — Compétences</span>
-                    </div>
-                    <h2 class="reveal stagger-1 font-syne text-3xl md:text-5xl font-semibold tracking-tight leading-tight mb-8">
-                        Outils &amp; <br><span class="text-brand">technologies</span>
-                    </h2>
-                    <p class="reveal stagger-2 text-[#777] text-sm leading-relaxed mb-10">
-                        Un écosystème complet pour administrer, sécuriser et virtualiser des infrastructures réseau.
-                    </p>
-                    <!-- Service cards -->
-                    <div class="space-y-4">
-                        <div class="reveal stagger-3 group bg-white/[.02] border border-white/5 rounded-xl p-6 hover:border-brand/20 hover:bg-brand/[.03] transition-all duration-500 hover-target">
-                            <div class="flex items-start gap-4">
-                                <div class="w-10 h-10 rounded-lg bg-brand/10 flex items-center justify-center flex-shrink-0">
-                                    <i data-lucide="server" class="w-5 h-5 text-brand"></i>
-                                </div>
-                                <div>
-                                    <h4 class="font-syne font-semibold text-white mb-1">Infrastructure réseau</h4>
-                                    <p class="text-sm text-[#555]">Installation postes, serveurs, switchs, routage inter-réseaux, analyse Wireshark.</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="reveal stagger-4 group bg-white/[.02] border border-white/5 rounded-xl p-6 hover:border-brand/20 hover:bg-brand/[.03] transition-all duration-500 hover-target">
-                            <div class="flex items-start gap-4">
-                                <div class="w-10 h-10 rounded-lg bg-brand/10 flex items-center justify-center flex-shrink-0">
-                                    <i data-lucide="shield-check" class="w-5 h-5 text-brand"></i>
-                                </div>
-                                <div>
-                                    <h4 class="font-syne font-semibold text-white mb-1">Sécurité informatique</h4>
-                                    <p class="text-sm text-[#555]">Pare-feu, antivirus, Windows Defender, GPO, audit sécurité (KDC, Netlogon).</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="reveal stagger-5 group bg-white/[.02] border border-white/5 rounded-xl p-6 hover:border-brand/20 hover:bg-brand/[.03] transition-all duration-500 hover-target">
-                            <div class="flex items-start gap-4">
-                                <div class="w-10 h-10 rounded-lg bg-brand/10 flex items-center justify-center flex-shrink-0">
-                                    <i data-lucide="boxes" class="w-5 h-5 text-brand"></i>
-                                </div>
-                                <div>
-                                    <h4 class="font-syne font-semibold text-white mb-1">Virtualisation &amp; Outils</h4>
-                                    <p class="text-sm text-[#555]">VMware, VirtualBox, Windows Server 2019, AD DS, DNS, Cisco Packet Tracer, VLANs.</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <!-- Skill tags grid -->
-                <div class="flex flex-col justify-center">
-                    <div class="reveal stagger-2 grid grid-cols-2 gap-3">
-                        <div class="bg-white/[.02] border border-white/5 rounded-xl p-5 text-center hover:border-brand/15 transition-colors duration-500">
-                            <i data-lucide="monitor" class="w-6 h-6 text-brand mx-auto mb-3"></i>
-                            <div class="text-sm text-white font-medium">Windows Server</div>
-                            <div class="text-[10px] text-[#444] uppercase tracking-wider mt-1">AD DS · DNS · DHCP</div>
-                        </div>
-                        <div class="bg-white/[.02] border border-white/5 rounded-xl p-5 text-center hover:border-brand/15 transition-colors duration-500">
-                            <i data-lucide="network" class="w-6 h-6 text-brand mx-auto mb-3"></i>
-                            <div class="text-sm text-white font-medium">Cisco</div>
-                            <div class="text-[10px] text-[#444] uppercase tracking-wider mt-1">Packet Tracer · VLAN · ACL</div>
-                        </div>
-                        <div class="bg-white/[.02] border border-white/5 rounded-xl p-5 text-center hover:border-brand/15 transition-colors duration-500">
-                            <i data-lucide="terminal" class="w-6 h-6 text-brand mx-auto mb-3"></i>
-                            <div class="text-sm text-white font-medium">PowerShell</div>
-                            <div class="text-[10px] text-[#444] uppercase tracking-wider mt-1">Scripting · Automatisation</div>
-                        </div>
-                        <div class="bg-white/[.02] border border-white/5 rounded-xl p-5 text-center hover:border-brand/15 transition-colors duration-500">
-                            <i data-lucide="layers" class="w-6 h-6 text-brand mx-auto mb-3"></i>
-                            <div class="text-sm text-white font-medium">VMware</div>
-                            <div class="text-[10px] text-[#444] uppercase tracking-wider mt-1">VirtualBox · VMs</div>
-                        </div>
-                        <div class="bg-white/[.02] border border-white/5 rounded-xl p-5 text-center hover:border-brand/15 transition-colors duration-500">
-                            <i data-lucide="search" class="w-6 h-6 text-brand mx-auto mb-3"></i>
-                            <div class="text-sm text-white font-medium">Wireshark</div>
-                            <div class="text-[10px] text-[#444] uppercase tracking-wider mt-1">Analyse de trames</div>
-                        </div>
-                        <div class="bg-white/[.02] border border-white/5 rounded-xl p-5 text-center hover:border-brand/15 transition-colors duration-500">
-                            <i data-lucide="lock" class="w-6 h-6 text-brand mx-auto mb-3"></i>
-                            <div class="text-sm text-white font-medium">GPO</div>
-                            <div class="text-[10px] text-[#444] uppercase tracking-wider mt-1">Stratégies · Sécurité</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <div class="neon-line"></div>
-
-    <!-- PARCOURS (XP + Formation + Langues) -->
-    <section id="parcours" class="px-6 md:px-12 py-24 md:py-40">
-        <div class="max-w-5xl mx-auto">
-
-            <!-- XP -->
-            <div class="reveal flex items-center gap-3 mb-6">
-                <span class="w-8 h-[1px] bg-brand"></span>
-                <span class="text-[10px] uppercase tracking-[.3em] text-[#555]">04 — Expériences</span>
-            </div>
-            <h2 class="reveal stagger-1 font-syne text-3xl md:text-4xl font-semibold tracking-tight mb-16">
-                Mon <span class="text-brand">parcours</span>
-            </h2>
-
-            <div class="relative">
-                <div class="absolute left-4 md:left-1/2 top-0 bottom-0 w-[1px] bg-white/5 -translate-x-1/2">
-                    <div class="line-grow h-full bg-gradient-to-b from-brand to-transparent"></div>
-                </div>
-
-                <!-- XP 1 -->
-                <div class="reveal stagger-1 relative flex flex-col md:flex-row md:items-center mb-16 pl-12 md:pl-0">
-                    <div class="absolute left-2.5 md:left-1/2 w-3 h-3 bg-brand rounded-full -translate-x-1/2 shadow-[0_0_10px_rgba(249,85,0,.5)]"></div>
-                    <div class="md:w-1/2 md:pr-12 md:text-right">
-                        <span class="text-[10px] uppercase tracking-widest text-brand">Depuis jan. 2026</span>
-                        <h4 class="font-syne font-semibold text-white mt-1 text-lg">Apprenti Technicien Systèmes &amp; Réseaux</h4>
-                        <p class="text-sm text-[#666] mt-1">Tunzini</p>
-                    </div>
-                    <div class="md:w-1/2 md:pl-12 mt-2 md:mt-0">
-                        <p class="text-sm text-[#777]">Configuration de postes, déploiement d'équipements, réparation de traceurs et photocopieurs, mise en place de serveurs et configuration de switchs, support quotidien et rédaction de procédures.</p>
-                        <div class="flex gap-2 mt-3 flex-wrap">
-                            <span class="text-[10px] uppercase tracking-wider bg-white/[.03] border border-white/5 text-[#888] px-2.5 py-1 rounded-full">Windows</span>
-                            <span class="text-[10px] uppercase tracking-wider bg-white/[.03] border border-white/5 text-[#888] px-2.5 py-1 rounded-full">VMware</span>
-                            <span class="text-[10px] uppercase tracking-wider bg-white/[.03] border border-white/5 text-[#888] px-2.5 py-1 rounded-full">Réseau</span>
-                            <span class="text-[10px] uppercase tracking-wider bg-white/[.03] border border-white/5 text-[#888] px-2.5 py-1 rounded-full">Switches</span>
-                            <span class="text-[10px] uppercase tracking-wider bg-white/[.03] border border-white/5 text-[#888] px-2.5 py-1 rounded-full">Support</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- XP 2 -->
-                <div class="reveal stagger-2 relative flex flex-col md:flex-row md:items-center mb-16 pl-12 md:pl-0">
-                    <div class="absolute left-2.5 md:left-1/2 w-3 h-3 bg-white/20 rounded-full -translate-x-1/2 border border-white/10"></div>
-                    <div class="md:w-1/2 md:pr-12 md:text-right">
-                        <span class="text-[10px] uppercase tracking-widest text-[#444]">Mars — Mai 2021</span>
-                        <h4 class="font-syne font-semibold text-white mt-1 text-lg">Soutien scolaire bénévole</h4>
-                        <p class="text-sm text-[#666] mt-1">Collège Évariste Galois</p>
-                    </div>
-                    <div class="md:w-1/2 md:pl-12 mt-2 md:mt-0">
-                        <p class="text-sm text-[#777]">Soutien en mathématiques. Développement de pédagogie et de communication interpersonnelle.</p>
-                        <div class="flex gap-2 mt-3">
-                            <span class="text-[10px] uppercase tracking-wider bg-white/[.03] border border-white/5 text-[#888] px-2.5 py-1 rounded-full">Pédagogie</span>
-                            <span class="text-[10px] uppercase tracking-wider bg-white/[.03] border border-white/5 text-[#888] px-2.5 py-1 rounded-full">Communication</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- XP 3 -->
-                <div class="reveal stagger-3 relative flex flex-col md:flex-row md:items-center mb-16 pl-12 md:pl-0">
-                    <div class="absolute left-2.5 md:left-1/2 w-3 h-3 bg-white/20 rounded-full -translate-x-1/2 border border-white/10"></div>
-                    <div class="md:w-1/2 md:pr-12 md:text-right">
-                        <span class="text-[10px] uppercase tracking-widest text-[#444]">Nov. 2020</span>
-                        <h4 class="font-syne font-semibold text-white mt-1 text-lg">Stage d'observation</h4>
-                        <p class="text-sm text-[#666] mt-1">École Robespierre</p>
-                    </div>
-                    <div class="md:w-1/2 md:pl-12 mt-2 md:mt-0">
-                        <p class="text-sm text-[#777]">Observation du travail enseignant. Soutien logistique à la gestion de classe.</p>
-                        <div class="flex gap-2 mt-3">
-                            <span class="text-[10px] uppercase tracking-wider bg-white/[.03] border border-white/5 text-[#888] px-2.5 py-1 rounded-full">Organisation</span>
-                            <span class="text-[10px] uppercase tracking-wider bg-white/[.03] border border-white/5 text-[#888] px-2.5 py-1 rounded-full">Stage</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- FORMATION -->
-            <div class="reveal flex items-center gap-3 mb-6 mt-24">
-                <span class="w-8 h-[1px] bg-brand"></span>
-                <span class="text-[10px] uppercase tracking-[.3em] text-[#555]">05 — Formation</span>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div class="reveal stagger-1 group bg-white/[.02] border border-white/5 rounded-xl p-6 hover:border-brand/20 transition-all duration-500 hover-target relative overflow-hidden">
-                    <div class="absolute top-2 right-3 font-syne text-6xl text-brand/[.04] leading-none pointer-events-none">BTS</div>
-                    <span class="text-[10px] uppercase tracking-widest text-brand">2025 → 2027</span>
-                    <h4 class="font-syne font-semibold text-white mt-2 text-lg leading-tight">BTS SIO<br>Option SISR</h4>
-                    <p class="text-sm text-[#555] mt-2">ESUP — La Défense</p>
-                </div>
-                <div class="reveal stagger-2 group bg-white/[.02] border border-white/5 rounded-xl p-6 hover:border-brand/20 transition-all duration-500 hover-target relative overflow-hidden">
-                    <div class="absolute top-2 right-3 font-syne text-6xl text-brand/[.04] leading-none pointer-events-none">L1</div>
-                    <span class="text-[10px] uppercase tracking-widest text-[#444]">2024 → 2025</span>
-                    <h4 class="font-syne font-semibold text-white mt-2 text-lg leading-tight">Licence STAPS<br>Spécialité Sport</h4>
-                    <p class="text-sm text-[#555] mt-2">Université Paris Nanterre</p>
-                </div>
-                <div class="reveal stagger-3 group bg-white/[.02] border border-white/5 rounded-xl p-6 hover:border-brand/20 transition-all duration-500 hover-target relative overflow-hidden">
-                    <div class="absolute top-2 right-3 font-syne text-6xl text-brand/[.04] leading-none pointer-events-none">BAC</div>
-                    <span class="text-[10px] uppercase tracking-widest text-[#444]">2023 → 2024</span>
-                    <h4 class="font-syne font-semibold text-white mt-2 text-lg leading-tight">Baccalauréat<br>Général Scientifique</h4>
-                    <p class="text-sm text-[#555] mt-2">Lycée Joliot Curie, Nanterre</p>
-                </div>
-            </div>
-
-            <!-- LANGUES -->
-            <div class="reveal flex items-center gap-3 mb-6 mt-20">
-                <span class="w-8 h-[1px] bg-brand"></span>
-                <span class="text-[10px] uppercase tracking-[.3em] text-[#555]">06 — Langues</span>
-            </div>
-
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div class="reveal stagger-1 bg-white/[.02] border border-white/5 rounded-xl p-5 text-center hover:border-brand/15 transition-colors duration-500 relative overflow-hidden">
-                    <div class="font-syne text-3xl text-brand mb-1">FR</div>
-                    <div class="text-sm text-white font-medium">Français</div>
-                    <div class="text-[10px] uppercase tracking-wider text-[#444] mt-1">C2 — Natif</div>
-                    <div class="absolute bottom-0 left-0 right-0 h-[2px] bg-brand"></div>
-                </div>
-                <div class="reveal stagger-2 bg-white/[.02] border border-white/5 rounded-xl p-5 text-center hover:border-brand/15 transition-colors duration-500 relative overflow-hidden">
-                    <div class="font-syne text-3xl text-brand mb-1">AR</div>
-                    <div class="text-sm text-white font-medium">Arabe</div>
-                    <div class="text-[10px] uppercase tracking-wider text-[#444] mt-1">C2 — Natif</div>
-                    <div class="absolute bottom-0 left-0 right-0 h-[2px] bg-brand"></div>
-                </div>
-                <div class="reveal stagger-3 bg-white/[.02] border border-white/5 rounded-xl p-5 text-center hover:border-brand/15 transition-colors duration-500 relative overflow-hidden">
-                    <div class="font-syne text-3xl text-brand mb-1">EN</div>
-                    <div class="text-sm text-white font-medium">Anglais</div>
-                    <div class="text-[10px] uppercase tracking-wider text-[#444] mt-1">B2 — Avancé</div>
-                    <div class="absolute bottom-0 left-0 h-[2px] bg-brand" style="width:72%"></div>
-                </div>
-                <div class="reveal stagger-4 bg-white/[.02] border border-white/5 rounded-xl p-5 text-center hover:border-brand/15 transition-colors duration-500 relative overflow-hidden">
-                    <div class="font-syne text-3xl text-brand mb-1">ES</div>
-                    <div class="text-sm text-white font-medium">Espagnol</div>
-                    <div class="text-[10px] uppercase tracking-wider text-[#444] mt-1">C1 — Courant</div>
-                    <div class="absolute bottom-0 left-0 h-[2px] bg-brand" style="width:88%"></div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <div class="neon-line"></div>
-
-    <!-- CONTACT -->
-    <section id="contact" class="px-6 md:px-12 py-24 md:py-40 relative overflow-hidden">
-        <div class="absolute bottom-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] glow-brand pointer-events-none"></div>
-        <div class="max-w-5xl mx-auto relative">
-            <div class="text-center mb-16">
-                <div class="reveal flex items-center gap-3 mb-6 justify-center">
-                    <span class="w-8 h-[1px] bg-brand"></span>
-                    <span class="text-[10px] uppercase tracking-[.3em] text-[#555]">07 — Contact</span>
-                    <span class="w-8 h-[1px] bg-brand"></span>
-                </div>
-                <h2 class="reveal stagger-1 font-syne text-4xl md:text-6xl lg:text-7xl font-semibold tracking-tight leading-tight">
-                    Travaillons<br><span class="text-brand">ensemble.</span>
-                </h2>
-                <p class="reveal stagger-2 text-[#777] text-sm mt-6 max-w-md mx-auto">
-                    Disponible pour des opportunités d'alternance ou de stage. N'hésitez pas à me contacter.
-                </p>
-            </div>
-
-            <form id="contact-form" class="reveal stagger-3 max-w-2xl mx-auto space-y-8">
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-8">
-                    <div>
-                        <label class="text-[10px] uppercase tracking-widest text-[#444] block mb-2">Nom</label>
-                        <input type="text" class="form-input hover-target" placeholder="Votre nom" required>
-                    </div>
-                    <div>
-                        <label class="text-[10px] uppercase tracking-widest text-[#444] block mb-2">Email</label>
-                        <input type="email" class="form-input hover-target" placeholder="votre@email.com" required>
-                    </div>
-                </div>
-                <div>
-                    <label class="text-[10px] uppercase tracking-widest text-[#444] block mb-2">Sujet</label>
-                    <input type="text" class="form-input hover-target" placeholder="Alternance, stage, collaboration...">
-                </div>
-                <div>
-                    <label class="text-[10px] uppercase tracking-widest text-[#444] block mb-2">Message</label>
-                    <textarea class="form-input hover-target resize-none" rows="4" placeholder="Décrivez votre proposition..." required></textarea>
-                </div>
-                <div class="text-center pt-4">
-                    <button type="submit" class="magnetic-btn hover-target bg-brand text-black text-xs font-bold uppercase tracking-widest px-12 py-4 rounded-full hover:bg-white transition-colors duration-300 inline-flex items-center gap-3">
-                        <span>Envoyer le message</span>
-                        <i data-lucide="send" class="w-4 h-4"></i>
-                    </button>
-                </div>
-            </form>
-
-            <div class="reveal stagger-4 flex items-center justify-center gap-6 mt-16">
-                <a href="mailto:mohamed.hemamda017@gmail.com" class="hover-target w-12 h-12 rounded-full border border-white/5 flex items-center justify-center hover:border-brand/30 hover:bg-brand/5 transition-all duration-300 group">
-                    <i data-lucide="mail" class="w-5 h-5 text-[#555] group-hover:text-brand transition-colors"></i>
-                </a>
-                <a href="https://www.linkedin.com/in/mohamed-h-7b102032a/" target="_blank" class="hover-target w-12 h-12 rounded-full border border-white/5 flex items-center justify-center hover:border-brand/30 hover:bg-brand/5 transition-all duration-300 group">
-                    <i data-lucide="linkedin" class="w-5 h-5 text-[#555] group-hover:text-brand transition-colors"></i>
-                </a>
-                <a href="https://github.com/" target="_blank" class="hover-target w-12 h-12 rounded-full border border-white/5 flex items-center justify-center hover:border-brand/30 hover:bg-brand/5 transition-all duration-300 group">
-                    <i data-lucide="github" class="w-5 h-5 text-[#555] group-hover:text-brand transition-colors"></i>
-                </a>
-            </div>
-        </div>
-    </section>
-
-    <!-- FOOTER -->
-    <footer class="px-6 md:px-12 py-8 border-t border-white/5">
-        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-            <span class="text-xs text-[#333]">Mohamed Hemamda © 2026</span>
-            <div class="flex items-center gap-2 text-xs text-[#333]">
-                <span>Nanterre 92000</span>
-                <span class="text-brand/30">·</span>
-                <span>BTS SIO SISR</span>
-                <span class="text-brand/30">·</span>
-                <span>Tunzini · ESUP La Défense</span>
-            </div>
-        </div>
-    </footer>
-</main>
-
-<script>
-// ===== LOADER =====
-let loadProgress=0;
-const loaderFill=document.getElementById('loader-fill'),loader=document.getElementById('loader');
-const loadInterval=setInterval(()=>{
-    loadProgress+=Math.random()*30+10;
-    if(loadProgress>=100){loadProgress=100;clearInterval(loadInterval);setTimeout(()=>{loader.classList.add('hidden');triggerHero()},400)}
-    loaderFill.style.width=loadProgress+'%';
-},200);
-
-// ===== CURSOR =====
-const cursor=document.getElementById('cursor'),cursorDot=document.getElementById('cursor-dot');
-let mouseX=0,mouseY=0,cursorX=0,cursorY=0;
-document.addEventListener('mousemove',e=>{mouseX=e.clientX;mouseY=e.clientY;cursorDot.style.left=mouseX+'px';cursorDot.style.top=mouseY+'px'});
-(function aC(){cursorX+=(mouseX-cursorX)*.15;cursorY+=(mouseY-cursorY)*.15;cursor.style.left=cursorX+'px';cursor.style.top=cursorY+'px';requestAnimationFrame(aC)();
-})();
-document.addEventListener('mousedown',()=>cursor.classList.add('click'));
-document.addEventListener('mouseup',()=>cursor.classList.remove('click'));
-document.querySelectorAll('.hover-target').forEach(el=>{el.addEventListener('mouseenter',()=>cursor.classList.add('hover'));el.addEventListener('mouseleave',()=>cursor.classList.remove('hover'))});
-
-// ===== THREE.JS =====
-const canvas=document.getElementById('three-canvas');
-const renderer=new THREE.WebGLRenderer({canvas,alpha:true,antialias:true});
-renderer.setSize(window.innerWidth,window.innerHeight);
-renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
-const scene=new THREE.Scene(),camera=new THREE.PerspectiveCamera(75,window.innerWidth/window.innerHeight,.1,1000);
-camera.position.z=30;
-
-const pCount=800,positions=new Float32Array(pCount*3),origPos=new Float32Array(pCount*3);
-for(let i=0;i<pCount*3;i+=3){positions[i]=(Math.random()-.5)*60;positions[i+1]=(Math.random()-.5)*60;positions[i+2]=(Math.random()-.5)*40;origPos[i]=positions[i];origPos[i+1]=positions[i+1];origPos[i+2]=positions[i+2]}
-const geo=new THREE.BufferGeometry();
-geo.setAttribute('position',new THREE.BufferAttribute(positions,3));
-const mat=new THREE.PointsMaterial({color:0xF95500,size:.06,transparent:true,opacity:.6,blending:THREE.AdditiveBlending});
-const particles=new THREE.Points(geo,mat);
-scene.add(particles);
-
-const pos2=new Float32Array(400*3);
-for(let i=0;i<400*3;i+=3){pos2[i]=(Math.random()-.5)*80;pos2[i+1]=(Math.random()-.5)*80;pos2[i+2]=(Math.random()-.5)*50}
-const geo2=new THREE.BufferGeometry();geo2.setAttribute('position',new THREE.BufferAttribute(pos2,3));
-const mat2=new THREE.PointsMaterial({color:0xffffff,size:.03,transparent:true,opacity:.15,blending:THREE.AdditiveBlending});
-scene.add(new THREE.Points(geo2,mat2));
-
-let scrollY=0;
-window.addEventListener('scroll',()=>{scrollY=window.pageYOffset});
-(function aT(){requestAnimationFrame(aT);const t=Date.now()*.0005;
-particles.rotation.y=t*.05;particles.rotation.x=t*.02;
-const pa=geo.attributes.position.array;
-for(let i=0;i<pCount*3;i+=3){const dx=(mouseX/window.innerWidth-.5)*2,dy=(mouseY/window.innerHeight-.5)*2;pa[i]+=(origPos[i]+dx*2-pa[i])*.01;pa[i+1]+=(origPos[i+1]-dy*2-pa[i+1])*.01}
-geo.attributes.position.needsUpdate=true;camera.position.y=-scrollY*.005;renderer.render(scene,camera)})();
-window.addEventListener('resize',()=>{camera.aspect=window.innerWidth/window.innerHeight;camera.updateProjectionMatrix();renderer.setSize(window.innerWidth,window.innerHeight)});
-
-// ===== HERO =====
-function triggerHero(){document.querySelectorAll('.hero-line-inner').forEach((el,i)=>setTimeout(()=>el.classList.add('active'),i*150));document.querySelectorAll('#hero .reveal').forEach(el=>setTimeout(()=>el.classList.add('active'),600))}
-
-// ===== SCROLL REVEAL =====
-const rObs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('active');
-if(e.target.querySelector('.skill-fill'))e.target.querySelectorAll('.skill-fill').forEach(b=>b.style.width=b.dataset.width)}})},{threshold:.15,rootMargin:'0px 0px -50px 0px'});
-document.querySelectorAll('.reveal,.reveal-left,.reveal-right,.reveal-scale,.line-grow').forEach(el=>rObs.observe(el));
-
-// ===== NAV =====
-const nav=document.getElementById('nav');
-window.addEventListener('scroll',()=>nav.classList.toggle('scrolled',window.scrollY>80));
-
-// ===== MOBILE MENU =====
-const mBtn=document.getElementById('mobile-menu-btn'),mMenu=document.getElementById('mobile-menu');
-let mOpen=false;
-mBtn.addEventListener('click',()=>{mOpen=!mOpen;mMenu.style.opacity=mOpen?'1':'0';mMenu.style.pointerEvents=mOpen?'auto':'none'});
-document.querySelectorAll('.mobile-link').forEach(l=>l.addEventListener('click',()=>{mOpen=false;mMenu.style.opacity='0';mMenu.style.pointerEvents='none'}));
-
-// ===== MAGNETIC =====
-document.querySelectorAll('.magnetic-btn').forEach(b=>{b.addEventListener('mousemove',e=>{const r=b.getBoundingClientRect();b.style.transform=`translate(${(e.clientX-r.left-r.width/2)*.2}px,${(e.clientY-r.top-r.height/2)*.2}px)`});b.addEventListener('mouseleave',()=>b.style.transform='translate(0,0)')});
-
-// ===== FORM =====
-const toast=document.getElementById('toast');
-function showToast(m){toast.textContent=m;toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),3000)}
-document.getElementById('contact-form').addEventListener('submit',e=>{e.preventDefault();const btn=e.target.querySelector('button[type="submit"]');btn.innerHTML='<span>Envoi en cours...</span>';btn.disabled=true;
-setTimeout(()=>{showToast('✓ Message envoyé avec succès !');e.target.reset();btn.innerHTML='<span>Envoyer le message</span><i data-lucide="send" class="w-4 h-4"></i>';btn.disabled=false;lucide.createIcons()},1500)});
-
-// ===== SMOOTH SCROLL =====
-document.querySelectorAll('a[href^="#"]').forEach(a=>{a.addEventListener('click',e=>{e.preventDefault();const t=document.querySelector(a.getAttribute('href'));if(t)t.scrollIntoView({behavior:'smooth',block:'start'})})});
-
-// ===== INIT ICONS =====
-lucide.createIcons();
-</script>
+  <!-- Script JS pour le mode sombre et le formulaire -->
+  <script>
+    // Mode clair/sombre basique (à améliorer)
+    const themeBtn = document.querySelector('.theme-btn');
+    const body = document.body;
+    let isLight = true;
+    function toggleTheme() {
+      isLight = !isLight;
+      body.classList.toggle('dark-mode', !isLight);
+      themeBtn.textContent = isLight ? '🌙 Mode sombre' : '☀️ Mode clair';
+      // Met à jour les couleurs dans le CSS si besoin (ici on utilise le dark-mode)
+      localStorage.setItem('theme', isLight ? 'light' : 'dark');
+    }
+    themeBtn.addEventListener('click', toggleTheme);
+    // Restaurer le mode en page reload
+    const savedTheme = localStorage.getItem('theme');
+    if(savedTheme === 'dark') {
+      body.classList.add('dark-mode');
+      isLight = false;
+      toggleTheme(); // Met à jour le bouton
+    }
+    // Gérer le formulaire (à envoyer via AJAX ou mail)
+    const form = document.getElementById('contactForm');
+    if(form) {
+      form.addEventListener('submit', function(e){
+        e.preventDefault();
+        const nom = this.elements['nom'].value;
+        const email = this.elements['email'].value;
+        const sujet = this.elements['sujet'].value;
+        const message = this.elements['message'].value;
+        // Ici, envoyer via fetch à une adresse mail ou afficher un message
+        document.getElementById('formMessage').textContent = "Merci pour ton message !";
+        document.getElementById('formMessage').style.display = 'block';
+        // Réinitialiser le formulaire
+        form.reset();
+        setTimeout(() => {
+          document.getElementById('formMessage').style.display = 'none';
+        }, 4000);
+      });
+    }
+  </script>
 </body>
 </html>
